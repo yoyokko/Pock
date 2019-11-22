@@ -70,6 +70,7 @@
 		34E644F7227D783E003D0450 /* KeySenderHelper.c in Sources */ = {isa = PBXBuildFile; fileRef = 34E644F6227D783E003D0450 /* KeySenderHelper.c */; };
 		34E644FB227D9A69003D0450 /* DockWidgetPreferencePane.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E644F9227D9A69003D0450 /* DockWidgetPreferencePane.swift */; };
 		34F27F2923428174001EBB6B /* login.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 347F335D22D0D5F600FA9805 /* login.framework */; };
+		366417762386DB76009F7562 /* CCKeycodeItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 366417752386DB76009F7562 /* CCKeycodeItem.swift */; };
 		962E0A5522CF1D1D00567E20 /* DockFolderController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 962E0A5722CF1D1D00567E20 /* DockFolderController.xib */; };
 		964435B722D18F91002FA1CB /* LocalizedUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = 964435B622D18F91002FA1CB /* LocalizedUtils.swift */; };
 		9667AAF222CF192D00C22410 /* GeneralPreferencePane.xib in Resources */ = {isa = PBXBuildFile; fileRef = 9667AAF422CF192D00C22410 /* GeneralPreferencePane.xib */; };
@@ -159,6 +160,7 @@
 		34E644F6227D783E003D0450 /* KeySenderHelper.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = KeySenderHelper.c; sourceTree = "<group>"; };
 		34E644F9227D9A69003D0450 /* DockWidgetPreferencePane.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DockWidgetPreferencePane.swift; sourceTree = "<group>"; };
 		34F27F2523428108001EBB6B /* LaunchAtLogin.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = LaunchAtLogin.framework; path = Carthage/Build/Mac/LaunchAtLogin.framework; sourceTree = "<group>"; };
+		366417752386DB76009F7562 /* CCKeycodeItem.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CCKeycodeItem.swift; sourceTree = "<group>"; };
 		3BA42833BC69C895EB31DF93 /* Pods-Pock.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pock.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Pock/Pods-Pock.debug.xcconfig"; sourceTree = "<group>"; };
 		716D62071D19174E56D6E33D /* Pods-Pock.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Pock.release.xcconfig"; path = "Pods/Target Support Files/Pods-Pock/Pods-Pock.release.xcconfig"; sourceTree = "<group>"; };
 		863BE70CFBAC31BDBF35B1FD /* Pods_Pock.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Pock.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -443,6 +445,7 @@
 				342D83BB2278D5CF000D79DA /* CCBrightnessUpItem.swift */,
 				342D83BC2278D5CF000D79DA /* CCVolumeUpItem.swift */,
 				9955665122DC668500EFFE6D /* CCToggleMuteItem.swift */,
+				366417752386DB76009F7562 /* CCKeycodeItem.swift */,
 			);
 			path = Items;
 			sourceTree = "<group>";
@@ -827,6 +830,7 @@
 				342D84002278D5CF000D79DA /* PKWidgetTouchBarItem.swift in Sources */,
 				342D83E22278D5CF000D79DA /* Preferences.swift in Sources */,
 				9955665222DC668500EFFE6D /* CCToggleMuteItem.swift in Sources */,
+				366417762386DB76009F7562 /* CCKeycodeItem.swift in Sources */,
 				342D83F42278D5CF000D79DA /* NowPlayingItemView.swift in Sources */,
 				349F93E8228865C400B8CFBE /* ISSoundAdditions.m in Sources */,
 				342D83ED2278D5CF000D79DA /* AppDelegate.swift in Sources */,

@@ -25,6 +25,7 @@ class PockMainController: PKTouchBarController {
     
     /// Core
     private var loadedWidgets: [NSTouchBarItem.Identifier: PKWidget] = [:]
+    private var keyboardShortcuts: [NSDictionary] = [];
     
     override var systemTrayItem: NSCustomTouchBarItem? {
         let item = NSCustomTouchBarItem(identifier: .pockSystemIcon)
@@ -69,6 +70,18 @@ class PockMainController: PKTouchBarController {
         completion(Array(loadedWidgets.values))
     }
     
+    private func loadControlButtonFromFilesystem(completion: ([NSDictionary]?) -> Void) {
+        let path = FileManager.default.homeDirectoryForCurrentUser.path + "/Library/Application Support/Pock/keyboard.shortcut";
+        if FileManager.default.fileExists(atPath: path) {
+            let jsonData = NSData(contentsOfFile:path)
+            let json = try? JSONSerialization.jsonObject(with: jsonData! as Data,
+                                                         options:.allowFragments) as! [NSDictionary]
+            completion(json)
+        } else {
+            completion([[:]])
+        }
+    }
+    
     override func awakeFromNib() {
         self.loadPluginsFromFilesystem(completion: { widgets in
             self.touchBar?.customizationIdentifier              = .pockTouchBar
@@ -79,6 +92,11 @@ class PockMainController: PKTouchBarController {
             self.touchBar?.customizationAllowedItemIdentifiers.append(contentsOf: customizableIds)
             
             super.awakeFromNib()
+        })
+        
+        self.loadControlButtonFromFilesystem(completion: { json in
+            self.keyboardShortcuts = json ?? []
+//            print(self.keyboardShortcuts)
         })
     }
     
@@ -93,7 +111,7 @@ class PockMainController: PKTouchBarController {
             widget = DockWidget()
         /// ControlCenter widget
         case .controlCenter:
-            widget = ControlCenterWidget()
+            widget = ControlCenterWidget(keyboardShortcuts: self.keyboardShortcuts)
         /// NowPlaying widget
         case .nowPlaying:
             widget = NowPlayingWidget()

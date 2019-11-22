@@ -34,6 +34,7 @@ void KeySenderPress(uint16_t keyCode, _Bool isAux) {
         event.compound.misc.L[0] = (NX_KEYDOWN << 8) | (keyCode << 16);
     }else {
         event.key.keyCode      = keyCode;
+        event.key.origCharSet = event.key.charSet = NX_ASCIISET;
     }
     kern_return_t ret = IOHIDPostEvent(_driver(), isAux ? NX_SYSDEFINED : NX_KEYDOWN, (IOGPoint){0}, &event, kNXEventDataVersion, 0, 0);
     if (KERN_SUCCESS != ret)
@@ -47,8 +48,39 @@ void KeySenderRelease(uint16_t keyCode, _Bool isAux) {
         event.compound.misc.L[0] = (NX_KEYUP << 8) | (keyCode << 16);
     }else {
         event.key.keyCode = keyCode;
+        event.key.origCharSet = event.key.charSet = NX_ASCIISET;
     }
     kern_return_t ret = IOHIDPostEvent(_driver(), isAux ? NX_SYSDEFINED : NX_KEYUP, (IOGPoint){0}, &event, kNXEventDataVersion, 0, 0);
     if (KERN_SUCCESS != ret)
         return;
+}
+
+void KeyboardShortcutSenderPress(CGKeyCode keyCode, _Bool cmd, _Bool alt, _Bool ctrl, _Bool shift) {
+    CGKeyCode inputKeyCode = keyCode;
+    CGEventSourceRef source = CGEventSourceCreate(kCGEventSourceStateCombinedSessionState);
+    CGEventRef commandDown = CGEventCreateKeyboardEvent(source, inputKeyCode, true);
+    CGEventFlags flag = 0;
+    if (cmd) {
+        flag |= kCGEventFlagMaskCommand;
+    }
+    if (alt) {
+        flag |= kCGEventFlagMaskAlternate;
+    }
+    if (ctrl) {
+        flag |= kCGEventFlagMaskControl;
+    }
+    if (shift) {
+        flag |= kCGEventFlagMaskShift;
+    }
+    if (flag != 0) {
+        CGEventSetFlags(commandDown, flag);
+    }
+    CGEventRef commandUp = CGEventCreateKeyboardEvent(source, inputKeyCode, false);
+    
+    CGEventPost(kCGHIDEventTap, commandDown);
+    CGEventPost(kCGHIDEventTap, commandUp);
+    
+    CFRelease(commandDown);
+    CFRelease(commandUp);
+    CFRelease(source);
 }

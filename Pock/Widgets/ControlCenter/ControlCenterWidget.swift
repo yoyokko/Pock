@@ -57,6 +57,7 @@ class ControlCenterWidget: PKWidget {
     var identifier: NSTouchBarItem.Identifier = NSTouchBarItem.Identifier.controlCenter
     var customizationLabel: String            = "Control Center".localized
     var view: NSView!
+    var keyCodeItems: [CCKeyCode] = []
     
     /// Core
     // Use controlsRaw to find volume and brightness items. Using control will show same icon for both vol(and brightness) up and down in slideableController when only 1 of up/down is enabled
@@ -68,8 +69,8 @@ class ControlCenterWidget: PKWidget {
             CCBrightnessUpItem(parentWidget: self),
             CCVolumeDownItem(parentWidget: self),
             CCVolumeUpItem(parentWidget: self),
-            CCToggleMuteItem(parentWidget: self)
-        ]
+            CCToggleMuteItem(parentWidget: self),
+            ] + self.keyCodeItems
     }
     
     private var controls: [ControlCenterItem] {
@@ -91,6 +92,22 @@ class ControlCenterWidget: PKWidget {
     fileprivate var segmentedControl: PressableSegmentedControl!
     
     required init() {
+        
+    }
+    
+    required init(keyboardShortcuts: [NSDictionary]?) {
+        for keyShortcut in keyboardShortcuts! {
+            let keycodeItem = CCKeyCode(parentWidget: self,
+                                        keyCode: keyShortcut.object(forKey: "keyCode") as? CGKeyCode ?? 0,
+                                        cmd: keyShortcut.object(forKey: "cmd") as? Bool ?? false ,
+                                        alt: keyShortcut.object(forKey: "alt") as? Bool ?? false,
+                                        ctrl: keyShortcut.object(forKey:"ctrl") as? Bool ?? false,
+                                        shift: keyShortcut.object(forKey:"shift") as? Bool ?? false,
+                                        title: keyShortcut.object(forKey:"title") as? String ?? "",
+                                        icon: keyShortcut.object(forKey:"icon") as? String ?? "",
+                                        conditionApp: keyShortcut.object(forKey: "condition") as? String ?? nil)
+            self.keyCodeItems.append(keycodeItem)
+        }
         self.load()
     }
     
@@ -106,20 +123,30 @@ class ControlCenterWidget: PKWidget {
     }
     
     private func initializeSegmentedControl() {
-        let items = controls.map({ $0.icon }) as [NSImage]
+        let itemLabels = controls.map({ $0.title }) as [String]
         guard segmentedControl == nil else {
             segmentedControl.segmentCount = controls.count
-            items.enumerated().forEach({ index, item in
-                segmentedControl.setImage(item, forSegment: index)
+            controls.enumerated().forEach({ index, con in
+                segmentedControl.setWidth(50, forSegment: index)
+                if con.icon != nil {
+                    segmentedControl.setLabel("", forSegment: index)
+                    segmentedControl.setImage(con.icon, forSegment: index)
+                } else {
+                    segmentedControl.setLabel(con.title, forSegment: index)
+                }
                 segmentedControl.setWidth(50, forSegment: index)
             })
             return
         }
-        segmentedControl = PressableSegmentedControl(images: items, trackingMode: .momentary, target: self, action: #selector(tap(_:)))
+        segmentedControl = PressableSegmentedControl(labels: itemLabels, trackingMode: .momentary, target: self, action: #selector(tap(_:)))
         segmentedControl.delegate = self
         segmentedControl.translatesAutoresizingMaskIntoConstraints = false
         segmentedControl.autoresizingMask = .width
-        controls.enumerated().forEach({ index, _ in
+        controls.enumerated().forEach({ index, con in
+            if con.icon != nil {
+                segmentedControl.setLabel("", forSegment: index)
+                segmentedControl.setImage(con.icon, forSegment: index)
+            }
             segmentedControl.setWidth(50, forSegment: index)
         })
         segmentedControl.didPressAt = { [unowned self] location in

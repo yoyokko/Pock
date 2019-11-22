@@ -28,7 +28,7 @@ class ControlCenterItem {
         }
     }
     
-    var icon: NSImage {
+    var icon: NSImage? {
         get {
             fatalError("Property `icon` must be override in subclasses.")
         }

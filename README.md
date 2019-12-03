@@ -94,6 +94,9 @@ Long press or slide on control center item to invoke sliders.
   <img width="500" src="https://pock.dev/assets/img/preview/widgets/pock_control_center_widget.png"/>
 </div>
 
+Support customize control widget item with keyboard shortcut fired.
+The keyboard shortcut item can be shown configured with conditon appname. Like show F8 F10 when Chrome in front.
+
 
 
 ##### More...

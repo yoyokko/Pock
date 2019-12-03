@@ -66,6 +66,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             let menu = NSMenu(title: "Pock Options")
             menu.addItem(withTitle: "Preferences…".localized, action: #selector(openPreferences),   keyEquivalent: ",")
             menu.addItem(withTitle: "Customize…".localized,   action: #selector(openCustomization), keyEquivalent: "c")
+            menu.addItem(withTitle: "Open keyboard.shortcut".localized, action: #selector(openConfigFile), keyEquivalent: "o")
             menu.addItem(NSMenuItem.separator())
             menu.addItem(withTitle: "Support this project".localized, action: #selector(openDonateURL),  keyEquivalent: "s")
             menu.addItem(NSMenuItem.separator())
@@ -157,6 +158,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @objc private func openCustomization() {
         (_navController?.rootController as? PockMainController)?.openCustomization()
+    }
+    
+    @objc private func openConfigFile() {
+        NSWorkspace.shared.selectFile(nil, inFileViewerRootedAtPath: (FileManager.default.homeDirectoryForCurrentUser.path + "/Library/Application Support/Pock/"))
     }
     
     @objc private func openDonateURL() {

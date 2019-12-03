@@ -58,6 +58,11 @@ class ControlCenterWidget: PKWidget {
     var customizationLabel: String            = "Control Center".localized
     var view: NSView!
     var keyCodeItems: [CCKeyCode] = []
+    var conditionApps: [String] = []
+    let keyboardShortcutFilePath = FileManager.default.homeDirectoryForCurrentUser.path + "/Library/Application Support/Pock/keyboard.shortcut"
+    private var fileMonitor: DirectoryMonitor
+    private var observation: NSKeyValueObservation?
+    private var currentAppName: String = "_"
     
     /// Core
     // Use controlsRaw to find volume and brightness items. Using control will show same icon for both vol(and brightness) up and down in slideableController when only 1 of up/down is enabled
@@ -74,7 +79,7 @@ class ControlCenterWidget: PKWidget {
     }
     
     private var controls: [ControlCenterItem] {
-        return controlsRaw.filter({ $0.enabled })
+        return controlsRaw.filter({ $0.enabled || $0.activeApp == currentAppName})
     }
     private var slideableController: PKSlideableController?
     
@@ -92,23 +97,21 @@ class ControlCenterWidget: PKWidget {
     fileprivate var segmentedControl: PressableSegmentedControl!
     
     required init() {
+
+        fileMonitor = DirectoryMonitor.init(URL: URL(fileURLWithPath: keyboardShortcutFilePath, isDirectory: false))
+        fileMonitor.delegate = self
+        fileMonitor.startMonitoring()
         
+        self.reload()
     }
     
-    required init(keyboardShortcuts: [NSDictionary]?) {
-        for keyShortcut in keyboardShortcuts! {
-            let keycodeItem = CCKeyCode(parentWidget: self,
-                                        keyCode: keyShortcut.object(forKey: "keyCode") as? CGKeyCode ?? 0,
-                                        cmd: keyShortcut.object(forKey: "cmd") as? Bool ?? false ,
-                                        alt: keyShortcut.object(forKey: "alt") as? Bool ?? false,
-                                        ctrl: keyShortcut.object(forKey:"ctrl") as? Bool ?? false,
-                                        shift: keyShortcut.object(forKey:"shift") as? Bool ?? false,
-                                        title: keyShortcut.object(forKey:"title") as? String ?? "",
-                                        icon: keyShortcut.object(forKey:"icon") as? String ?? "",
-                                        conditionApp: keyShortcut.object(forKey: "condition") as? String ?? nil)
-            self.keyCodeItems.append(keycodeItem)
+    deinit {
+        if fileMonitor != nil {
+            fileMonitor.stopMonitoring()
         }
-        self.load()
+        if observation != nil {
+            observation?.invalidate()
+        }
     }
     
     func viewDidAppear() {
@@ -117,9 +120,44 @@ class ControlCenterWidget: PKWidget {
         })
     }
     
+    private func loadControlButtonFromFilesystem() {
+        if FileManager.default.fileExists(atPath: keyboardShortcutFilePath) {
+            self.keyCodeItems.removeAll()
+            self.conditionApps.removeAll()
+            
+            let jsonData = NSData(contentsOfFile:keyboardShortcutFilePath)
+            let keyboardShortcuts = try? JSONSerialization.jsonObject(with: jsonData! as Data,
+                                                         options:.allowFragments) as! [NSDictionary]
+            for keyShortcut in keyboardShortcuts! {
+                let keycodeItem = CCKeyCode(parentWidget: self,
+                                            keyCode: keyShortcut.object(forKey: "keyCode") as? CGKeyCode ?? 0,
+                                            cmd: keyShortcut.object(forKey: "cmd") as? Bool ?? false ,
+                                            alt: keyShortcut.object(forKey: "alt") as? Bool ?? false,
+                                            ctrl: keyShortcut.object(forKey:"ctrl") as? Bool ?? false,
+                                            shift: keyShortcut.object(forKey:"shift") as? Bool ?? false,
+                                            title: keyShortcut.object(forKey:"title") as? String ?? "",
+                                            icon: keyShortcut.object(forKey:"icon") as? String ?? "",
+                                            conditionApp: keyShortcut.object(forKey: "condition") as? String ?? nil)
+                self.conditionApps.append(keyShortcut.object(forKey: "condition") as? String ?? "")
+                self.keyCodeItems.append(keycodeItem)
+            }
+        }
+    }
+    
+    private func reload() {
+        self.loadControlButtonFromFilesystem()
+        self.load()
+    }
+    
     private func load() {
         self.initializeSegmentedControl()
         self.view = segmentedControl
+        
+        if observation == nil {
+            observation = NSWorkspace.shared.observe(\.frontmostApplication, options: [.initial, .new, .old]) { [weak self] object, change in
+                self?.frontmostApplicationDidChange()
+            }
+        }
     }
     
     private func initializeSegmentedControl() {
@@ -151,6 +189,18 @@ class ControlCenterWidget: PKWidget {
         })
         segmentedControl.didPressAt = { [unowned self] location in
             self.longTap(at: location)
+        }
+    }
+    
+    private func frontmostApplicationDidChange() {
+        let oldAppName = self.currentAppName;
+        if self.conditionApps.contains((NSWorkspace.shared.frontmostApplication?.localizedName)!) {
+            self.currentAppName = NSWorkspace.shared.frontmostApplication?.localizedName ?? "_";
+        } else {
+            self.currentAppName = "_"
+        }
+        if oldAppName != self.currentAppName {
+            self.load()
         }
     }
     
@@ -190,5 +240,13 @@ extension ControlCenterWidget: PressableSegmentedControlDelegate {
         slider?.view?.touchesBegan(with: event)
         slider?.view?.touchesMoved(with: event)
         slideableController?.set(initialLocation: location)
+    }
+}
+
+extension ControlCenterWidget: DirectoryMonitorDelegate {
+    func directoryMonitorDidObserveChange(_ directoryMonitor: DirectoryMonitor) {
+        DispatchQueue.main.async {
+            self.reload()
+        }
     }
 }

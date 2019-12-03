@@ -18,6 +18,12 @@ class ControlCenterItem {
         }
     }
     
+    var activeApp: String {
+        get {
+            return ""
+        }
+    }
+    
     init(parentWidget: ControlCenterWidget?) {
         self.parentWidget = parentWidget
     }

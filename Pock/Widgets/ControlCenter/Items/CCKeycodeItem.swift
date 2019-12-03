@@ -14,82 +14,42 @@ class CCKeyCode: ControlCenterItem {
     init(parentWidget: ControlCenterWidget?, keyCode: CGKeyCode, cmd: Bool, alt: Bool, ctrl: Bool, shift: Bool, title: String, icon: String?, conditionApp: String? = nil) {
         key = KeyboardShortcutSender(keyCode: keyCode, cmd: cmd, alt: alt, ctrl: ctrl, shift: shift)
         keyCodeName = title
-        if icon != nil {
+        if icon != nil && icon!.count > 0 {
             let d = NSData(base64Encoded: icon ?? "", options: NSData.Base64DecodingOptions.ignoreUnknownCharacters);
-            iconImage = NSImage(data: d as! Data)?.resize(w: 25, h: 25, color: NSColor.clear)
+            iconImage = NSImage(data: d! as Data)?.resize(w: 25, h: 25, color: NSColor.clear)
         } else {
             iconImage = nil;
         }
         
-        if (conditionApp != nil) {
-            isActive = false;
-            activeApp = conditionApp!;
-            if NSWorkspace.shared.frontmostApplication?.localizedName == activeApp {
-                isActive = true;
-            }
+        if conditionApp != nil {
+            _activeApp = conditionApp ?? "";
+            _enabled = false;
         } else {
-            isActive = true;
-            activeApp = "";
+            _enabled = true;
+            _activeApp = ""
         }
-        
+
         super.init(parentWidget: parentWidget)
-        
-        if activeApp != "" {
-            observation = NSWorkspace.shared.observe(\.frontmostApplication, options: [.initial, .new, .old]) { [weak self] object, change in
-//                print(object, change)
-                self?.frontmostApplicationDidChange()
-            }
-//            NotificationCenter.default.addObserver(self, selector:#selector(checkActiveApp), name: NSWorkspace.didActivateApplicationNotification, object: nil)
-        }
     }
 
-    override var enabled: Bool{ return isActive }
-    
+    override var enabled: Bool { return _enabled }
+    override var activeApp: String { return _activeApp }
     private var key: KeyboardShortcutSender
     private var keyCodeName: String
     private var iconImage: NSImage?
-    private var isActive: Bool
-    private var activeApp: String
-    private var observation: NSKeyValueObservation?
-    
+    private var _activeApp: String
+    private var _enabled: Bool
+
     override var title: String  { return self.keyCodeName }
     
     override var icon:  NSImage? { return iconImage }
     
     override func action() -> Any? {
         key.send()
-        NSWorkspace.shared.notificationCenter.post(name: .shouldReloadControlCenterWidget, object: nil)
+//        NSWorkspace.shared.notificationCenter.post(name: .shouldReloadControlCenterWidget, object: nil)
         return ""
     }
     
     override func longPressAction() {
-    }
-    
-    func frontmostApplicationDidChange() {
-        print("frontmostApplicationDidChange", NSWorkspace.shared.frontmostApplication?.localizedName)
-        
-        if NSWorkspace.shared.frontmostApplication?.localizedName == activeApp {
-            isActive = true;
-            print("Active by ", activeApp, " refresh")
-        } else {
-            isActive = false;
-        }
-        
-        NSWorkspace.shared.notificationCenter.post(name: .shouldReloadControlCenterWidget, object: nil)
-    }
-    
-    @objc func checkActiveApp(noti: Notification) {
-        print(noti)
-        if NSWorkspace.shared.frontmostApplication?.localizedName == activeApp {
-            isActive = true;
-        } else {
-            isActive = false;
-        }
-//        let activeAppName = noti.userInfo?[NSWorkspace.applicationUserInfoKey] as! String;
-//        if activeAppName == activeApp {
-//            self.isActive = true;
-//        } else {
-//            self.isActive = false;
-//        }
     }
 }

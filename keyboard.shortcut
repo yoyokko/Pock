@@ -1,0 +1,32 @@
+[
+  {
+    "keyCode": 21,
+    "cmd": true,
+    "alt": false,
+    "ctrl": false,
+    "shift": true,
+    "title": "截图",
+    "icon": ""
+  },
+  {
+    "keyCode": 49,
+    "alt": true,
+    "cmd": false,
+    "shift": false,
+    "ctrl": false,
+    "title": "Alfred",
+    "icon": ""
+  },
+  {
+    "keyCode": 100,
+    "title": "F8",
+    "icon": "",
+    "condition": "Google Chrome"
+  },
+  {
+    "keyCode": 109,
+    "title": "F10",
+    "icon": "",
+    "condition": "Google Chrome"
+  }
+]
